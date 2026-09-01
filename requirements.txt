@@ -1,0 +1,13 @@
+# Shared virtual environment for all CV Lab work (Lab 01, Lab 02, ...).
+# Create/activate with:
+#   python -m venv .venv
+#   .venv\Scripts\activate          (Windows)
+#   pip install -r requirements.txt
+#   python -m ipykernel install --user --name=cv-lab --display-name "Python (CV Lab)"
+
+opencv-python==5.0.0.93
+numpy==2.5.2
+matplotlib==3.11.1
+pillow==12.3.0
+jupyter==1.1.1
+ipykernel==7.3.0
