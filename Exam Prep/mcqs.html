@@ -1,0 +1,306 @@
+<title>CV Lab Exam MCQs</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky filter + score bar over a single column of question cards; click an option to check it. */
+:root{
+  --bg:#f4f6f9; --surface:#fff; --fg:#16202a; --muted:#5a6878; --line:#d8dfe7;
+  --accent:#2d4fd6; --accent-soft:#e6ebfc; --good:#18794a; --good-soft:#e2f4ea; --bad:#b4232c; --bad-soft:#fbe5e6;
+  --display:'Bricolage Grotesque',system-ui,sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e131a; --surface:#161d26; --fg:#e5ebf2; --muted:#97a6b6; --line:#28323e;
+  --accent:#8ea4ff; --accent-soft:#1d2645; --good:#5fd394; --good-soft:#12301f; --bad:#ff7c84; --bad-soft:#3a1519; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131a; --surface:#161d26; --fg:#e5ebf2; --muted:#97a6b6; --line:#28323e;
+  --accent:#8ea4ff; --accent-soft:#1d2645; --good:#5fd394; --good-soft:#12301f; --bad:#ff7c84; --bad-soft:#3a1519; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 60px}
+.wrap{max-width:820px;margin-inline:auto}
+header{padding-block:30px 12px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-size:clamp(26px,5vw,36px);margin:6px 0;text-wrap:balance}
+.lede{color:var(--muted);margin:0}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-16px;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:500 13px var(--body);padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip:focus-visible,.opt:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.score{margin-left:auto;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.btn{font:500 13px var(--body);padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-top:14px}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.qt{font-weight:600;margin:6px 0 10px}
+.qt code,.why code,.opt code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.opts{display:grid;gap:7px}
+.opt{text-align:left;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 12px;cursor:pointer;display:flex;gap:10px}
+.opt b{font-family:var(--mono);color:var(--muted)}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.right b{color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.wrong b{color:var(--bad)}
+.why{margin-top:10px;font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px}
+.why strong{color:var(--fg)}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="kicker">AI-4002 Computer Vision Lab · Labs 01-06</div>
+  <h1>Lab Exam MCQs</h1>
+  <p class="lede">Click an option to check it. Filter by lab, or reveal all answers for quick revision.</p>
+</header>
+<div class="bar" id="bar">
+  <span id="chips" style="display:flex;flex-wrap:wrap;gap:6px"></span>
+  <button class="btn" id="reveal" type="button">Show all answers</button>
+  <button class="btn" id="reset" type="button">Reset</button>
+  <span class="score" id="score"></span>
+</div>
+<div id="list"></div>
+</div>
+
+<script>
+const LABS = {1:'Lab 01',2:'Lab 02',3:'Lab 03',4:'Lab 04',5:'Lab 05',6:'Lab 06'};
+// [lab, topic, question, [options], correctIndex, explanation]
+const Q = [
+[1,"Basics","A digital image is best described as:",["A continuous function only","A 2D function f(x,y) whose coordinates and amplitude are finite, discrete values","A list of colors","A vector graphic"],1,"Amplitude at (x,y) is the intensity / gray level."],
+[1,"Basics","In the image coordinate convention, the origin (0,0) is at:",["Center","Bottom-left","Top-left","Bottom-right"],2,"Rows increase downward, columns increase to the right."],
+[1,"Basics","For a color image loaded with OpenCV, `img.shape` is:",["(width, height, channels)","(height, width, channels)","(channels, height, width)","(width, height)"],1,"Rows (height) come first. A grayscale image has a 2D shape (H, W)."],
+[1,"Basics","An 8-bit grayscale pixel can take how many intensity levels?",["8","128","255","256"],3,"0 (black) to 255 (white)."],
+[1,"Basics","What does `cv2.imread('missing.jpg')` do when the file does not exist?",["Raises FileNotFoundError","Returns None silently","Returns a black image","Crashes Python"],1,"Always check `if img is None:`. The error appears later, e.g. in cvtColor."],
+[1,"Basics","The default flag of `cv2.imread` is:",["IMREAD_GRAYSCALE (0)","IMREAD_COLOR (1)","IMREAD_UNCHANGED (-1)","IMREAD_ALPHA"],1,"Loads 3-channel BGR and drops any alpha channel. UNCHANGED keeps alpha."],
+[1,"Basics","An image shows with red and blue swapped in matplotlib. The fix is:",["`cv2.flip`","`cv2.cvtColor(img, cv2.COLOR_BGR2RGB)`","`cmap='gray'`","`img/255`"],1,"OpenCV stores BGR; matplotlib expects RGB."],
+[1,"Basics","A grayscale image displayed with `plt.imshow(gray)` and no cmap looks green/purple because:",["The image is corrupted","matplotlib applies its default colormap (viridis)","OpenCV is BGR","It is float"],1,"Use `cmap='gray'`."],
+[1,"Operations","`cv2.resize(img, (300, 200))` produces an image of shape:",["(300, 200, 3)","(200, 300, 3)","(300, 300, 3)","(200, 200, 3)"],1,"dsize is (width, height); shape is (height, width, channels)."],
+[1,"Operations","To halve an image with scale factors you write:",["`cv2.resize(img, 0.5)`","`cv2.resize(img, None, fx=0.5, fy=0.5)`","`cv2.resize(img, (0.5, 0.5))`","`img[::0.5]`"],1,"dsize must be None when fx/fy are used."],
+[1,"Operations","Which interpolation is recommended for shrinking an image?",["INTER_NEAREST","INTER_AREA","INTER_CUBIC","INTER_LANCZOS4"],1,"INTER_LINEAR is the default; INTER_CUBIC is good for enlarging."],
+[1,"Operations","`cv2.GaussianBlur(img, (4,4), 0)` will:",["Blur lightly","Raise an error because the kernel size must be odd","Sharpen","Return None"],1,"ksize must be positive and odd. sigma 0 means it is computed from ksize."],
+[1,"Operations","Cropping the left half of an image is done with:",["`cv2.crop(img, ...)`","NumPy slicing `img[:, :w//2]`","`cv2.resize`","`cv2.warpAffine`"],1,"Slicing is [rows, cols] = [y1:y2, x1:x2] and returns a view."],
+[1,"Operations","In `cv2.putText(img, text, org, ...)`, `org` is the:",["Top-left of the text","Bottom-left corner of the text","Center of the text","Font size"],1,"Drawing functions modify the image in place."],
+[1,"Operations","On a BGR image, the color `(255, 0, 0)` passed to `cv2.rectangle` draws:",["Red","Blue","Green","White"],1,"Color tuples follow the image's channel order."],
+[1,"Operations","Thickness `-1` in `cv2.circle` or `cv2.rectangle` means:",["Thinnest line","Filled shape","No drawing","Dashed line"],1,"Same as cv2.FILLED."],
+[1,"Operations","`cv2.add(np.uint8([250]), np.uint8([10]))` gives:",["4","255","260","0"],1,"cv2.add saturates. NumPy `+` on uint8 wraps to 4."],
+[1,"Operations","`cv2.getRotationMatrix2D(center, 45, 1)` rotates the image:",["45 degrees clockwise","45 degrees counter-clockwise","45 radians","Not at all"],1,"Positive angle = counter-clockwise. Returns a 2x3 matrix."],
+[1,"Operations","After rotating with `warpAffine(img, M, (w, h))`, the corners are cut off because:",["The matrix is wrong","The output canvas size is unchanged","Interpolation is linear","The image is BGR"],1,"Use scale < 1 (e.g. 0.8) or a larger canvas."],
+[1,"Operations","`cv2.threshold(gray, 100, 200, cv2.THRESH_BINARY)` sets pixels > 100 to:",["255","200","100","0"],1,"maxval is 200 (light gray, not pure white)."],
+[1,"Operations","The pandas call that gives count, mean, std, min, quartiles and max is:",["`df.info()`","`df.describe()`","`df.head()`","`df.sum()`"],1,"Used on the flattened B, G, R channel columns."],
+[1,"Operations","`img.reshape(-1, 3)` on an (H, W, 3) image gives shape:",["(3, H*W)","(H*W, 3)","(H, W*3)","(-1, 3)"],1,"-1 lets NumPy infer the dimension."],
+[1,"Masking","Combining a shape cut from image A with the background of image B uses:",["Only bitwise_and","bitwise_and with mask, bitwise_not for the inverted mask, then bitwise_or","cv2.add only","cv2.subtract"],1,"fg = and(A, mask); bg = and(B, not(mask)); result = or(fg, bg)."],
+[1,"Theory","The FIRST fundamental step of digital image processing is:",["Enhancement","Image acquisition","Segmentation","Compression"],1,"Pre-processing such as scaling is also done here."],
+[1,"Theory","Which DIP step is described as the 'simplest and most appealing' area?",["Restoration","Image enhancement","Segmentation","Recognition"],1,"Enhancement highlights features like brightness and contrast."],
+[1,"Theory","Which DIP step is considered the most difficult?",["Acquisition","Compression","Segmentation","Enhancement"],2,"Partitioning an image into its objects."],
+[1,"Theory","Wavelets and multi-resolution processing are used for:",["Color modeling","Data compression and pyramidal representation","Object labels","Shape extraction"],1,"Represent images at several resolutions."],
+[1,"Theory","Tools for extracting image components useful for describing shape belong to:",["Compression","Morphological processing","Color processing","Restoration"],1,"Morphology (erosion, dilation, opening, closing)."],
+[1,"Theory","Assigning a label to an object based on its descriptors is:",["Segmentation","Object recognition","Representation","Acquisition"],1,"Representation and description come right after segmentation."],
+[1,"Theory","Object detection differs from classification because detection:",["Labels the whole image","Identifies and localizes objects","Only works on video","Removes noise"],1,"Classification gives one label for the whole image."],
+[1,"Theory","A homography relates two images of:",["Any 3D scene","The same planar surface","Different colors","A video"],1,"It is a 3x3 projective transform."],
+[1,"Theory","SURF is best described as:",["A slower SIFT","A faster alternative to SIFT","A segmentation method","A color space"],1,"Speeded-Up Robust Features."],
+[1,"Theory","Optical flow estimates:",["Edges","Motion of objects between consecutive frames","Color histograms","Depth only"],1,"Tracking follows objects over frames."],
+[1,"Libraries","OpenVINO is developed by and focused on:",["Google, training","Intel, inference optimization","Facebook, object detection","Microsoft, NLP"],1,"Detectron2 is Facebook's PyTorch-based detection library."],
+[1,"Libraries","Which library in the manual's table is written mainly in C++ and focused on CNNs?",["Keras","Caffe","Pillow","Scikit-Image"],1,"Pillow has the lowest abstraction level."],
+[3,"Concepts","A geometric transformation changes:",["Pixel colors only","Where pixels are located (position, orientation, scale, shape)","Brightness","Histogram"],1,"Photometric transforms change what the pixel looks like."],
+[3,"Concepts","Gamma correction is an example of a ____ transform.",["Geometric","Photometric","Projective","Affine"],1,"It changes intensity, not location."],
+[3,"Concepts","In image coordinates, increasing y moves a point:",["Up","Down","Left","Right"],1,"Origin is top-left; +ty translation moves the image down."],
+[3,"Matrices","`cv2.warpAffine` expects a transformation matrix of size:",["2x2","2x3","3x3","4x4"],1,"warpPerspective expects 3x3. 3D homogeneous uses 4x4."],
+[3,"Matrices","Why can a 2x2 matrix not perform translation?",["It is too small to store angles","A linear map always keeps the origin fixed (A·0 = 0)","OpenCV does not allow it","It only works on color"],1,"Homogeneous coordinates (x, y, 1) with a 3x3 matrix solve this."],
+[3,"Matrices","Translation by (tx, ty) as a 2x3 matrix is:",["[[tx,0,0],[0,ty,0]]","[[1,0,tx],[0,1,ty]]","[[0,1,tx],[1,0,ty]]","[[1,tx,0],[ty,1,0]]"],1,"x' = x + tx, y' = y + ty."],
+[3,"Matrices","The 2x2 rotation matrix is:",["[[cos,sin],[sin,cos]]","[[cos,-sin],[sin,cos]]","[[1,k],[0,1]]","[[sx,0],[0,sy]]"],1,"Angles in NumPy trig functions must be in radians."],
+[3,"Matrices","Horizontal shear with factor k uses the matrix:",["[[1,0],[k,1]]","[[1,k],[0,1]]","[[k,0],[0,k]]","[[0,k],[k,0]]"],1,"x' = x + k*y; new width = w + |k|*h."],
+[3,"Matrices","`[[1,0],[0,-1]]` performs:",["Rotation by 90","Reflection across the X-axis (flips y)","Shear","Scaling by 2"],1,"Negative diagonal entries flip an axis. Determinant < 0 indicates reflection."],
+[3,"Matrices","In M = T·R·S applied to a point, which happens first?",["T","R","S","All at once, order irrelevant"],2,"The rightmost matrix applies first; matrix multiplication is not commutative."],
+[3,"Hierarchy","Which ordering from most to least restrictive is correct?",["Affine, Rigid, Similarity, Projective","Rigid, Similarity, Affine, Projective","Projective, Affine, Similarity, Rigid","Similarity, Rigid, Projective, Affine"],1,"Each class contains the previous one."],
+[3,"Hierarchy","A rigid (Euclidean) transform preserves:",["Only straight lines","Lengths, angles and area","Only parallelism","Nothing"],1,"Rotation + translation with scale exactly 1."],
+[3,"Hierarchy","A similarity transform adds which component to a rigid transform?",["Shear","Uniform scaling","Perspective","Reflection only"],1,"Angles and shape are preserved; size changes."],
+[3,"Hierarchy","An affine transform preserves:",["Angles and lengths","Parallel lines, collinearity and ratios along a line","Only the origin","Nothing"],1,"A square can become a parallelogram."],
+[3,"Hierarchy","Which property does a projective transform NOT preserve?",["Straight lines","Parallelism","Collinearity","Cross-ratio"],1,"Parallel lines can meet at a vanishing point."],
+[3,"Hierarchy","Degrees of freedom of an affine and a projective transform:",["4 and 6","6 and 8","8 and 9","3 and 4"],1,"Affine: 6 unknowns (2x3). Projective: 8 (3x3 up to scale)."],
+[3,"Point pairs","`cv2.getAffineTransform` needs how many point pairs?",["2","3 (non-collinear)","4","8"],1,"Six unknowns, two equations per pair."],
+[3,"Point pairs","`cv2.getPerspectiveTransform` needs how many point pairs?",["3","4 (no three collinear)","6","At least 10"],1,"Returns a 3x3 homography."],
+[3,"Point pairs","Points passed to getPerspectiveTransform must be:",["Python lists of ints","np.float32 arrays of shape (4, 2)","uint8 arrays","Tuples of strings"],1,"Affine uses float32 shape (3, 2)."],
+[3,"Projective","In the homography formula, x' = (h11x + h12y + h13) / (h31x + h32y + h33). For affine, the denominator is:",["Always 0","Always 1, because the bottom row is [0,0,1]","Depends on x and y","Equal to h11"],1,"The position-dependent denominator creates perspective."],
+[3,"Projective","Correcting a document photographed at an angle into a flat rectangle uses:",["Rotation","Shear","Perspective (homography) transform","Scaling"],2,"Map the 4 trapezoid corners to rectangle corners."],
+[3,"Functions","In `cv2.warpAffine(img, M, dsize)`, dsize is:",["(height, width)","(width, height)","(channels, width)","A scale factor"],1,"Swapping it is the classic bug."],
+[3,"Functions","Areas outside the warped image are filled with black because:",["Interpolation fails","Default borderMode is BORDER_CONSTANT with borderValue 0","The image is BGR","dsize is too small"],1,"Pass `borderValue=(255,255,255)` for white."],
+[3,"Functions","The default interpolation of warpAffine and resize is:",["INTER_NEAREST","INTER_LINEAR","INTER_CUBIC","INTER_AREA"],1,"Bilinear."],
+[3,"Functions","To pass a 3x3 homogeneous affine matrix T to warpAffine, use:",["`T`","`T[:2]`","`T.T`","`np.linalg.inv(T)`"],1,"warpAffine needs the top 2 rows (2x3)."],
+[3,"Functions","Rotating about the image center with a hand-built matrix means:",["Rotate only","Translate center to origin, rotate, translate back","Scale then shear","Flip then rotate"],1,"T(c)·R·T(-c). getRotationMatrix2D builds this for you."],
+[3,"Functions","To avoid clipping corners when rotating by theta, the new width is:",["w*cos","h*|sin| + w*|cos|","w + h","w*2"],1,"New height = h*|cos| + w*|sin|; then shift M[0,2], M[1,2] by the center difference."],
+[3,"Functions","`cv2.flip(img, 1)` flips the image:",["Vertically","Horizontally","Both ways","Not at all"],1,"0 = vertical, -1 = both."],
+[6,"Wavelets","The wavelet transform provides analysis in:",["Frequency only","Time (space) and frequency at multiple scales","Color only","Spatial domain only"],1,"Suited to non-stationary signals."],
+[6,"Wavelets","The Morlet wavelet is typically used with which transform?",["DWT","CWT","WPT","Hough"],1,"DWT families include Haar, Daubechies (db1 = Haar) and Symlet."],
+[6,"Wavelets","A 1-level 2D DWT of an image produces:",["2 sub-bands","4 sub-bands: approximation + horizontal, vertical, diagonal details","8 sub-bands","1 image"],1,"`cA, (cH, cV, cD) = pywt.dwt2(img, 'haar')`."],
+[6,"Wavelets","Wavelet packet transform (WPT) differs from DWT because it:",["Uses no wavelet","Also decomposes the detail coefficients","Only works on images","Is continuous"],1,"DWT only re-splits the approximation branch."],
+[6,"Wavelets","In wavelet denoising, which coefficients are thresholded?",["Approximation only","Detail coefficients","All, including approximation","None"],1,"Decompose, threshold details (soft/hard), reconstruct with the inverse transform."],
+[6,"Edges","Sobel Gx (dx=1, dy=0) responds most strongly to:",["Horizontal edges","Vertical edges","Corners only","Flat regions"],1,"It measures change along x."],
+[6,"Edges","Applying Sobel on a uniform (flat) region gives:",["255","0","A random value","-1"],1,"No intensity change, no gradient."],
+[6,"Edges","Why use `cv2.convertScaleAbs` after `cv2.Laplacian(..., cv2.CV_64F)`?",["To blur","To take absolute values and convert to displayable uint8","To threshold","To rotate"],1,"dst = saturate(|alpha*src + beta|)."],
+[6,"Edges","LoG detects edges at:",["Gradient peaks","Zero-crossings of the second derivative","Histogram peaks","Corners"],1,"Sobel and Canny use first-derivative peaks."],
+[6,"Edges","In Canny, NMS (non-maximum suppression):",["Removes weak edges","Thins edges by keeping only local maxima along the gradient","Blurs the image","Links edges"],1,"Hysteresis is the step that removes unconnected weak pixels."],
+[6,"Hough","The Hough transform was introduced by:",["David Lowe, 1999","Paul Hough, 1962","John Canny, 1986","Otsu, 1979"],1,"Originally for lines in binary images."],
+[6,"Hough","OpenCV's HoughLines uses which line parametrization?",["y = mx + b","rho = x*cos(theta) + y*sin(theta)","x = my + b","Polynomial"],1,"Slope m is infinite for vertical lines."],
+[6,"Hough","In (rho, theta) space, a single image point maps to:",["A point","A sinusoidal curve","A circle","A line"],1,"Intersections of curves are lines in the image."],
+[6,"Hough","The parameter space for detecting circles is:",["1D (r)","2D (a, b)","3D (a, b, r)","4D"],2,"(x-a)^2 + (y-b)^2 = r^2."],
+[6,"Hough","`cv2.HoughLinesP` returns:",["(rho, theta) pairs","Segment endpoints (x1, y1, x2, y2)","Circles","Keypoints"],1,"Probabilistic: faster, uses a random subset of points."],
+[6,"Hough","In `cv2.HoughCircles`, lowering `param2` will:",["Detect fewer circles","Detect more circles, including false ones","Change the radius","Blur the image"],1,"param2 is the accumulator threshold; param1 is the Canny high threshold."],
+[6,"Hough","`cv2.HoughCircles` input must be:",["Color BGR","8-bit single-channel grayscale","Binary edges only","Float"],1,"Median blur first to reduce false circles. Result shape is (1, N, 3)."],
+[6,"Hough","If HoughLines finds nothing, it returns:",["An empty list","None","0","An error"],1,"Check `if lines is not None:` before looping."],
+[6,"SIFT","SIFT is invariant to:",["Only translation","Scale and rotation (robust to illumination)","Only color","Nothing"],1,"Scale-Invariant Feature Transform (Lowe)."],
+[6,"SIFT","SIFT finds candidate keypoints using:",["Sobel","Difference of Gaussians (DoG) across scale space","Canny","Hough"],1,"DoG approximates the LoG."],
+[6,"SIFT","In scale-space extrema detection, each pixel is compared with how many neighbors?",["8","9","18","26"],3,"8 in the same scale + 9 above + 9 below."],
+[6,"SIFT","The SIFT descriptor length is:",["32","64","128","256"],2,"4x4 sub-regions x 8 orientation bins."],
+[6,"SIFT","Rotation invariance in SIFT comes from:",["DoG","Orientation assignment (dominant gradient direction)","RANSAC","Ratio test"],1,"A 36-bin orientation histogram (10 degrees each)."],
+[6,"SIFT","Lowe's ratio test keeps a match when:",["d1 > d2","d1 < 0.7-0.8 x d2 (best much closer than second best)","d1 = 0","Always"],1,"Needs `knnMatch(d1, d2, k=2)`."],
+[6,"SIFT","Which norm should BFMatcher use for SIFT descriptors?",["NORM_HAMMING","NORM_L2","NORM_L1 only","NORM_INF"],1,"Hamming is for binary descriptors like ORB."],
+[6,"SIFT","RANSAC in feature matching is used to:",["Detect keypoints","Reject outlier matches while estimating a model (e.g. homography)","Compute descriptors","Blur the image"],1,"Random Sample Consensus."],
+[6,"SIFT","`cv2.findHomography` needs at least how many point correspondences?",["2","3","4","8"],2,"8 DOF, two equations per pair."],
+[6,"SIFT","To draw the detected object's box in the scene after findHomography, use:",["`cv2.warpAffine`","`cv2.perspectiveTransform(corners, H)`","`cv2.resize`","`cv2.boundingRect`"],1,"Then cv2.polylines with the transformed corners."],
+[6,"Video","`cv2.createBackgroundSubtractorMOG2` marks shadows in the mask as:",["0","127","255","-1"],1,"Threshold above ~200 to remove shadows."],
+[6,"Video","`cv2.findContours` in OpenCV 4 returns:",["3 values","2 values: (contours, hierarchy)","Only contours","A mask"],1,"OpenCV 3 returned (image, contours, hierarchy)."],
+[6,"Video","A `cv2.VideoWriter` produces an empty file most often because:",["FPS is too high","Written frames do not match the (width, height) given at creation","The codec is mp4v","The path is relative"],1,"Frame size must match exactly."],
+[2,"Histogram equalization","What does `cv2.equalizeHist()` use as its intensity mapping?",["The image mean","The cumulative distribution function (CDF) of the histogram","A fixed gamma curve","The median of each row"],1,"new_value = CDF(old_value) x 255, which spreads crowded intensities across 0-255."],
+[2,"Histogram equalization","`cv2.equalizeHist()` accepts which input?",["Any BGR image","8-bit single-channel (grayscale) image","Float image in 0..1","Only binary masks"],1,"It needs uint8 single-channel input. For color, equalize the V or Y channel instead."],
+[2,"Histogram equalization","A major drawback of global histogram equalization on ultrasound images is that it:",["Reduces image size","Amplifies noise","Converts the image to color","Requires a kernel size"],1,"It boosts contrast everywhere, including noise. CLAHE limits this."],
+[2,"Histogram equalization","Why is equalizing each B, G, R channel separately a bad idea?",["It is too slow","It changes the hues (color shifts)","It is not allowed by OpenCV","It makes the image binary"],1,"Each channel is stretched differently, so colors shift. Equalize luminance only."],
+[2,"Color mapping","What does `cv2.applyColorMap(gray, cv2.COLORMAP_JET)` return?",["A grayscale image","A 3-channel BGR false-color image","A histogram","A binary mask"],1,"Each gray level is mapped to a color, so the output has 3 channels in BGR order."],
+[2,"Color mapping","In COLORMAP_JET, low intensities appear as:",["Red","Blue","White","Green"],1,"JET runs blue (low), cyan, green, yellow, red (high)."],
+[2,"Color mapping","False-color (pseudo-color) imaging:",["Adds new diagnostic information","Only makes existing intensity differences easier to see","Removes noise","Increases resolution"],1,"The eye separates colors better than grays. No new information is created."],
+[2,"Color balance","The gray-world color balance assumes:",["The brightest pixel is white","The average of the R, G and B channels should be equal","The image is grayscale","Blue is always dominant"],1,"Each channel is scaled by gray_mean / channel_mean to remove a color cast."],
+[2,"Color balance","Why convert to float before multiplying channels by a scale factor?",["Float is faster","To avoid uint8 overflow and wrap-around","OpenCV requires float","To convert to RGB"],1,"uint8 arithmetic wraps (200*2 becomes 144). Use float, then `np.clip` and cast back."],
+[2,"Thresholding","`_, mask = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY)` sets pixels above 200 to:",["0","200","255","The original value"],2,"THRESH_BINARY: pixel > thresh becomes maxval (255), else 0."],
+[2,"Thresholding","How do you keep only the masked pixels of an image?",["`cv2.add(img, mask)`","`cv2.bitwise_and(img, img, mask=mask)`","`cv2.bitwise_not(mask)`","`img * 255`"],1,"Pixels where the mask is 0 become black. The rest keep their value."],
+[2,"Log transform","The log transform `s = c*log(1+r)` mainly:",["Darkens dark regions","Expands dark values and compresses bright values","Inverts the image","Detects edges"],1,"Dark pixels get strongly brightened, which reveals detail in shadows."],
+[2,"Log transform","Why is `1` added inside `log(1 + r)`?",["To brighten the image","Because log(0) is undefined","To make values negative","To normalize"],1,"A pixel value of 0 would give log(0) = -infinity."],
+[2,"Log transform","In the log transform, `c = 255 / log(1 + max)` is used to:",["Invert the image","Scale the output back to 0..255","Add noise","Choose the threshold"],1,"It makes the brightest input map to 255."],
+[2,"Gamma","With power-law `s = 255*(r/255)^gamma`, gamma < 1 will:",["Darken the image","Brighten midtones/darks","Leave it unchanged","Binarize it"],1,"gamma < 1 brightens; gamma > 1 darkens and suppresses bright areas."],
+[2,"Gamma","Which gamma suppresses very bright regions (e.g. ultrasound backscatter)?",["gamma = 0.4","gamma = 1","gamma = 2.0","gamma = 0"],2,"gamma > 1 pushes bright values down relative to the rest."],
+[2,"Fusion","`cv2.addWeighted(ct, 0.7, mri, 0.3, 0)` computes:",["ct*mri","0.7*ct + 0.3*mri + 0","max(ct, mri)","ct - mri"],1,"dst = alpha*src1 + beta*src2 + gamma, saturated to 0..255."],
+[2,"Fusion","A requirement for `cv2.addWeighted` on two images is:",["They must be grayscale","They must have the same size and number of channels","They must be float","Weights must be integers"],1,"Mismatched shapes raise an error. Resize or convert first."],
+[2,"Fusion","In the CT/MRI fusion task, why does CT get the heavier weight?",["CT is in color","To preserve the sharp anatomical (bone) edges","MRI is noisier","addWeighted requires it"],1,"CT shows structure; MRI adds soft-tissue variation with a lighter weight."],
+[2,"Video","What does `cap.read()` return?",["Only the frame","A tuple (ret, frame), where ret is False at the end of the video","The frame count","The FPS"],1,"Always check `ret` and break the loop when it is False."],
+[2,"Video","Why is `cv2.waitKey(1)` needed inside a video display loop?",["It saves the frame","It lets the window refresh and polls the keyboard","It sets FPS to 1","It releases the capture"],1,"Without waitKey, imshow windows never update."],
+[2,"Video","To stack a grayscale frame next to a 3-channel enhanced frame with `np.hstack`, you must first:",["Resize to half","Convert the gray frame with `cv2.COLOR_GRAY2BGR`","Equalize both","Transpose one"],1,"hstack needs equal height and equal channel count."],
+[2,"Basics","OpenCV's `cv2.imread` loads color images in which channel order?",["RGB","BGR","HSV","RGBA"],1,"Convert with `cv2.COLOR_BGR2RGB` before `plt.imshow`."],
+[4,"Feature extraction","Feature extraction mainly aims to:",["Increase image resolution","Reduce raw data to a compact, meaningful representation","Add color","Compress files"],1,"Features keep essential information and drop irrelevant detail."],
+[4,"Feature extraction","Which is a GLOBAL feature?",["A corner keypoint","A color histogram of the whole image","An 8x8 patch","A SIFT descriptor"],1,"Global features describe the entire image; local ones describe regions/keypoints."],
+[4,"HOG","HOG stands for:",["Histogram of Gaussian","Histogram of Oriented Gradients","High Order Gradient","Hue Orientation Graph"],1,"Used widely for pedestrian/object detection."],
+[4,"HOG","In the manual, HOG uses which typical cell and block sizes?",["3x3 cells, 1x1 blocks","8x8 pixel cells, 2x2 cell blocks","16x16 cells, 4x4 blocks","1x1 cells, 8x8 blocks"],1,"`hog(image, pixels_per_cell=(8,8), cells_per_block=(2,2))`."],
+[4,"HOG","Why does HOG normalize histograms over blocks?",["To reduce the effect of lighting/contrast changes","To increase vector length","To convert to color","To find corners"],0,"Block normalization makes the descriptor robust to illumination."],
+[4,"HOG","Which operator is typically used for HOG gradient computation?",["Laplacian","Sobel","Median","Box"],1,"Sobel gives dx and dy, then magnitude and orientation."],
+[4,"LBP","In LBP, a neighbor gets bit 1 when:",["It is less than the center","It is greater than or equal to the center","It equals 255","It is on an edge"],1,"Neighbor >= center gives 1, else 0."],
+[4,"LBP","With `radius=1`, the manual sets `n_points` to:",["4","8","16","24"],1,"n_points = 8 * radius."],
+[4,"LBP","LBP with `method='uniform'` and 8 points gives how many histogram bins?",["8","10","256","59"],1,"Codes run 0..P+1 = 0..9, so 10 bins (`bins=np.arange(0, n_points+3)`)."],
+[4,"LBP","LBP is mainly a ____ descriptor.",["Color","Texture","Shape","Motion"],1,"Used for texture classification and face recognition."],
+[4,"Color histogram","A color histogram is computed by:",["Counting pixels per color bin in RGB or HSV","Summing gradients","Thresholding","Convolving with Sobel"],0,"Divide color space into bins and count pixels in each."],
+[4,"HED","In HED, the manual uses how many orientation bins over 0-360?",["4","8","9","16"],1,"`np.histogram(orientation, bins=8, range=(0,360))`, 45 degrees per bin."],
+[4,"HED/HIG","`np.arctan2(gy, gx) * 180/np.pi` returns angles in which range?",["0 to 360","-180 to 180","0 to 90","0 to 180"],1,"That is why a 0..360 range drops negative angles unless you use `% 360`."],
+[4,"HIG","HIG in the manual uses:",["8 bins over 0-360","9 bins over 0-180","256 bins","2 bins"],1,"`np.histogram(orientation, bins=9, range=(0,180))`."],
+[4,"Gradients","Gradient magnitude is computed as:",["dx + dy","sqrt(dx^2 + dy^2)","dx * dy","atan2(dy, dx)"],1,"Orientation is atan2(dy, dx)."],
+[4,"Texture","Texture energy is defined in the manual as:",["Std deviation of window pixels","Sum of squared pixel values in a window","Mean of the window","Number of edges"],1,"E = sum(pixel^2). Contrast is the standard deviation."],
+[4,"Texture","Texture contrast is defined as:",["Sum of squares","Standard deviation of pixel values in the neighborhood","Max minus min","Gradient angle"],1,"C = sqrt(Var(pixels)). Higher means more variation."],
+[4,"Convolution","Convolution computes each output pixel as:",["The max of the window","The sum of element-wise products of kernel and window","The median","The difference of two pixels"],1,"Slide the kernel, multiply element-wise, sum (a dot product)."],
+[4,"Convolution","In `cv2.filter2D(img, -1, kernel)`, the `-1` means:",["Flip the kernel","Output has the same depth as the input","Use zero padding","Invert the image"],1,"ddepth = -1 keeps the source data type."],
+[4,"Convolution","A 3x3 box blur kernel is:",["`np.ones((3,3))`","`np.ones((3,3))/9`","`np.eye(3)`","`[[0,-1,0],[-1,4,-1],[0,-1,0]]`"],1,"Weights sum to 1, so brightness is preserved."],
+[4,"Convolution","'Valid' convolution (no padding) produces output that is:",["Larger than input","Same size as input","Smaller than input","Always 1x1"],2,"Only positions with full kernel overlap are computed."],
+[4,"Convolution","'Same' convolution uses padding so that the output is:",["Smaller","The same size as input","Twice as large","Binary"],1,"Zero padding keeps borders and the original size."],
+[4,"Convolution","A stride of 2 makes the output:",["About twice as large","About half the size in each dimension","Unchanged","Inverted"],1,"The kernel jumps 2 pixels at a time. Note: `cv2.filter2D` has no strides argument; use slicing `[::2, ::2]`."],
+[4,"Gaussian","`cv2.GaussianBlur(img, (5,5), 0)` with sigma 0 means:",["No blur","Sigma is computed from the kernel size","Infinite blur","Error"],1,"OpenCV derives sigma from ksize when sigma = 0. Kernel size must be odd."],
+[4,"Sobel","`cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=3)` detects mainly:",["Horizontal edges","Vertical edges (change along x)","Corners","Blobs"],1,"dx=1 measures change left-right, which responds to vertical edges."],
+[4,"Sobel","Why use `cv2.CV_64F` as output depth for Sobel?",["Faster","Keeps negative gradient values instead of clipping them to 0","Required for color","Makes output binary"],1,"With uint8 output, negative slopes would be lost."],
+[4,"Edges","The Laplacian of Gaussian (LoG) locates edges at:",["Maxima of the first derivative","Zero-crossings of the second derivative","Pixels above 255","Corners"],1,"LoG = Gaussian smoothing + Laplacian; edges are zero-crossings."],
+[4,"Canny","Correct order of Canny steps:",["NMS, smoothing, hysteresis, gradient","Gaussian smoothing, gradient, non-maximum suppression, hysteresis","Gradient, hysteresis, smoothing, NMS","Thresholding only"],1,"Smooth, gradient, thin with NMS, then link with double threshold."],
+[4,"Canny","Non-maximum suppression in Canny:",["Removes noise by blurring","Thins edges to 1-pixel width by keeping local maxima along the gradient","Joins edges","Computes the gradient"],1,"Only the strongest pixel across an edge is kept."],
+[4,"Canny","In hysteresis, a pixel between T_low and T_high is kept if:",["Always","It is connected to a strong edge pixel","It is above 255","Never"],1,"Weak pixels survive only when linked to strong ones."],
+[4,"Canny","In `cv2.Canny(img, 100, 200)`, 100 and 200 are:",["Kernel sizes","Low and high hysteresis thresholds","Sigma values","Image width and height"],1,"threshold1 = low, threshold2 = high."],
+[4,"Canny","Who developed the Canny edge detector and when?",["John F. Canny, 1986","Marr and Hildreth, 1980","Sobel, 1968","Harris, 1988"],0,"John F. Canny, 1986."],
+
+[5,"Segmentation","Image segmentation means:",["Compressing an image","Partitioning an image into meaningful, non-overlapping regions","Rotating an image","Adding noise"],1,"Each region's pixels share color, texture or intensity."],
+[5,"Thresholding","Global thresholding is best when:",["Lighting varies across the image","Object and background have clear, uniform contrast","Objects touch each other","Colors are important"],1,"One T for the whole image. Uneven lighting needs adaptive thresholding."],
+[5,"Thresholding","`cv2.threshold` returns:",["Only the binary image","(retval, dst): the threshold used and the output image","(dst, mask)","A list of contours"],1,"Usually written `_, th = cv2.threshold(...)`."],
+[5,"Thresholding","With `THRESH_BINARY`, a pixel exactly equal to `thresh` becomes:",["maxval","0","thresh","Unchanged"],1,"BINARY uses strictly greater than: src > thresh gives maxval."],
+[5,"Thresholding","`THRESH_BINARY_INV` produces:",["maxval where src > thresh","0 where src > thresh, maxval elsewhere","A grayscale image","Edges"],1,"The inverse of BINARY. Useful when objects are darker than the background (coins)."],
+[5,"Adaptive","`cv2.adaptiveThreshold` returns:",["(retval, dst)","Only dst","(dst, C)","A histogram"],1,"Writing `_, x = cv2.adaptiveThreshold(...)` is an error."],
+[5,"Adaptive","In adaptive thresholding, the local threshold equals:",["Global mean + C","Local (mean or Gaussian-weighted) neighborhood value minus C","Otsu value","maxValue / 2"],1,"T(x,y) = weighted mean of blockSize x blockSize window - C."],
+[5,"Adaptive","Valid `blockSize` for `adaptiveThreshold`:",["Any even number","An odd number greater than 1 (e.g. 11)","0","Must equal C"],1,"Odd sizes have a center pixel."],
+[5,"Adaptive","`ADAPTIVE_THRESH_GAUSSIAN_C` differs from `MEAN_C` because:",["It uses a global threshold","Neighbors are Gaussian-weighted so the center counts more","It works only on color","It ignores C"],1,"MEAN_C uses a plain average of the block."],
+[5,"Adaptive","A very large blockSize makes adaptive thresholding behave like:",["Canny","Global thresholding","K-Means","Watershed"],1,"The window covers so much of the image that the local mean approaches the global mean."],
+[5,"Adaptive","Increasing C in adaptiveThreshold generally:",["Adds more foreground noise","Lowers the threshold so fewer pixels fall below it, giving cleaner but thinner results","Has no effect","Inverts the image"],1,"Threshold = mean - C, so larger C lowers T."],
+[5,"Otsu","Otsu's method chooses the threshold that:",["Minimizes between-class variance","Maximizes between-class variance (minimizes within-class variance)","Equals the image mean","Equals 127"],1,"Works best for bimodal histograms."],
+[5,"Otsu","How do you apply Otsu in OpenCV?",["`cv2.otsu(img)`","`cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)`","`cv2.adaptiveThreshold(img, 255, OTSU, ...)`","`cv2.Canny(img, 'otsu')`"],1,"The 0 is ignored. The chosen threshold is returned as retval."],
+[5,"Otsu","Otsu works best when the histogram is:",["Flat","Bimodal","Single-peaked","Empty"],1,"Two peaks (object and background) with a valley between them."],
+[5,"Color","OpenCV's Hue channel range for 8-bit HSV is:",["0-360","0-179","0-255","0-100"],1,"Hue is halved to fit in 8 bits. S and V are 0-255."],
+[5,"Color","Why does red need two `inRange` masks in HSV?",["Red is not in HSV","Red hue wraps around 0 and 179","Red has low saturation","OpenCV bug"],1,"Use roughly 0-10 and 170-179, then combine with bitwise_or."],
+[5,"Color","`cv2.inRange(hsv, lower, upper)` returns:",["A 3-channel image","A single-channel mask: 255 where lower <= pixel <= upper in all channels","Contours","A count"],1,"Bounds are inclusive. Apply with `cv2.bitwise_and(img, img, mask=mask)`."],
+[5,"Canny","In Canny hysteresis, an edge pixel between low and high threshold is:",["Always kept","Kept only if connected to a strong edge","Always removed","Set to 128"],1,"Above high = strong; below low = discarded."],
+[5,"Canny","Raising the high threshold while keeping low fixed gives:",["More edges and more noise","Fewer, cleaner strong edges","No change","Inverted edges"],1,"Fewer pixels qualify as strong edges."],
+[5,"Region growing","Region growing starts from:",["Every pixel","A seed point, adding neighbors that satisfy a similarity rule","The histogram peak","Random centroids"],1,"Result depends on the seed and the threshold."],
+[5,"Region growing","Too large a similarity threshold in region growing causes:",["Fragmented regions","Leaking into neighboring regions","No output","An error"],1,"Too small fragments the region instead."],
+[5,"Region growing","Why cast pixels to int before `abs(image[x,y] - seed_val)`?",["Speed","To avoid uint8 wrap-around in subtraction","OpenCV requires it","To make it binary"],1,"uint8 10 - 20 becomes 246, not -10."],
+[5,"Watershed","Watershed segmentation is most useful for:",["Single isolated objects","Touching or overlapping objects","Color sorting","Video"],1,"It treats the image as a topographic surface and floods from markers."],
+[5,"Watershed","In marker-based watershed, the sure background comes from:",["Erosion","Dilation of the opened mask","Distance transform","Canny"],1,"Dilation grows objects, so what remains outside is certainly background."],
+[5,"Watershed","The sure foreground is usually found by:",["Dilating the mask","Thresholding the distance transform","Equalizing the histogram","Inverting the image"],1,"Pixels far from the boundary (high distance) are object centers."],
+[5,"Watershed","`cv2.distanceTransform` gives each foreground pixel:",["Its intensity","Its distance to the nearest zero (background) pixel","Its gradient angle","A label"],1,"Returns float32; convert with np.uint8 before further use."],
+[5,"Watershed","The unknown region is computed as:",["sure_fg - sure_bg","`cv2.subtract(sure_bg, sure_fg)`","sure_bg + sure_fg","dist * 255"],1,"Pixels that are neither certainly background nor certainly foreground."],
+[5,"Watershed","Why do we do `markers = markers + 1` before watershed?",["To make labels negative","So the background is 1 instead of 0, because 0 marks 'unknown'","To count objects","To convert to float"],1,"Then `markers[unknown==255] = 0`."],
+[5,"Watershed","After `cv2.watershed`, boundary pixels in markers are labeled:",["0","255","-1","1"],2,"Draw them with `img[markers == -1] = [0,0,255]` (red in BGR)."],
+[5,"Watershed","`cv2.watershed(image, markers)` requires:",["Grayscale image, float markers","8-bit 3-channel image and int32 markers","Binary image only","HSV image"],1,"connectedComponents already returns int32 labels."],
+[5,"Watershed","`n, labels = cv2.connectedComponents(sure_fg)`: the number of objects is:",["n","n - 1 (label 0 is background)","n + 1","labels.max() + 1"],1,"The count includes the background label."],
+[5,"Watershed","A too-low distance-transform threshold (e.g. 0.2*max) for touching coins leads to:",["Each coin separated","Objects merging (under-segmentation)","No foreground","Error"],1,"Markers touch, so coins merge. About 0.5-0.7*max separates them."],
+[5,"Morphology","`cv2.MORPH_OPEN` is:",["Dilation then erosion","Erosion then dilation; removes small white noise","Only erosion","Edge detection"],1,"CLOSE = dilation then erosion; fills small holes."],
+[5,"K-Means","Before `cv2.kmeans`, pixel data must be:",["uint8 of shape HxWx3","float32 of shape (N, 3) via `img.reshape((-1,3))`","A list of tuples","Binary"],1,"Then convert centers back with np.uint8."],
+[5,"K-Means","The `criteria` tuple for cv2.kmeans is:",["(K, attempts, flags)","(type, max_iter, epsilon)","(low, high)","(blockSize, C)"],1,"e.g. (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)."],
+[5,"K-Means","In `cv2.kmeans(data, K, None, criteria, 10, flags)`, the 10 means:",["Max iterations","Number of attempts with different initial centers","Number of clusters","Epsilon"],1,"The best result (lowest compactness) is kept."],
+[5,"K-Means","`seg = centers[labels.flatten()].reshape(img.shape)` does what?",["Computes edges","Replaces every pixel with its cluster's center color","Counts clusters","Thresholds"],1,"This rebuilds the quantized (segmented) image."],
+[5,"K-Means","Increasing K in color K-Means segmentation gives:",["More simplification","An image closer to the original, with less simplification","A binary image","No change"],1,"K = 2 is very simplified; large K keeps more colors."],
+[5,"K-Means","K-Means minimizes:",["Between-class variance","Sum of squared distances from points to their cluster centroids","Number of edges","Entropy"],1,"Alternate assignment and update steps until convergence."],
+[5,"Theory","Graph-cut segmentation finds:",["Max intensity","A minimum cut separating source and sink","Edges with Sobel","Histogram peaks"],1,"Cut cost = sum of weights of edges in the cut."],
+[5,"Theory","Active contour models (snakes) are:",["Histograms","Deformable curves that evolve to fit object boundaries","Thresholds","Clustering algorithms"],1,"Driven by image gradients and smoothness constraints."],
+[5,"Theory","Deep-learning segmentation (CNNs) is used for:",["Only thresholding","Semantic and instance segmentation","Only edge detection","Image compression"],1,"Frameworks: TensorFlow, PyTorch, Keras."],
+];
+Q.sort((a,b)=>a[0]-b[0]);
+// Fixed shuffle of options so the correct letter is spread across A-D (same order on every load)
+Q.forEach((q,i)=>{
+  let s=(i+1)*9301+49297; const rnd=()=>(s=(s*233280+49297)%2147483647)/2147483647;
+  const idx=[0,1,2,3]; for(let k=3;k>0;k--){const j=Math.floor(rnd()*(k+1)); [idx[k],idx[j]]=[idx[j],idx[k]];}
+  q[3]=idx.map(k=>q[3][k]); q[4]=idx.indexOf(q[4]);
+});
+
+let filter = 0, revealAll = false; const answered = {};
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmt = s => esc(s).replace(/`([^`]+)`/g,'<code>$1</code>');
+
+function chips(){
+  const c = document.getElementById('chips'); c.innerHTML='';
+  [[0,'All']].concat(Object.entries(LABS)).forEach(([k,v])=>{
+    const n = k==0 ? Q.length : Q.filter(q=>q[0]==k).length;
+    const b=document.createElement('button'); b.type='button'; b.className='chip';
+    b.textContent=v+' ('+n+')'; b.setAttribute('aria-pressed', filter==k);
+    b.onclick=()=>{filter=+k; chips(); render();}; c.appendChild(b);
+  });
+}
+function render(){
+  const list=document.getElementById('list'); list.innerHTML='';
+  Q.forEach((q,i)=>{
+    if(filter && q[0]!==filter) return;
+    const d=document.createElement('div'); d.className='q';
+    const pick=answered[i]; const show=revealAll||pick!==undefined;
+    d.innerHTML='<div class="meta">'+LABS[q[0]]+' · '+esc(q[1])+' · Q'+(i+1)+'</div><div class="qt">'+fmt(q[2])+'</div>';
+    const o=document.createElement('div'); o.className='opts';
+    q[3].forEach((t,j)=>{
+      const b=document.createElement('button'); b.type='button'; b.className='opt';
+      if(show && j===q[4]) b.classList.add('right');
+      if(pick===j && j!==q[4]) b.classList.add('wrong');
+      b.innerHTML='<b>'+'ABCD'[j]+'</b><span>'+fmt(t)+'</span>';
+      b.onclick=()=>{ if(answered[i]===undefined){answered[i]=j; render(); score();} };
+      o.appendChild(b);
+    });
+    d.appendChild(o);
+    if(show){const w=document.createElement('div'); w.className='why'; w.innerHTML='<strong>Answer '+'ABCD'[q[4]]+'.</strong> '+fmt(q[5]); d.appendChild(w);}
+    list.appendChild(d);
+  });
+}
+function score(){
+  const ids=Object.keys(answered).filter(i=>!filter||Q[i][0]===filter);
+  const ok=ids.filter(i=>answered[i]===Q[i][4]).length;
+  document.getElementById('score').textContent='Score '+ok+' / '+ids.length+' answered';
+}
+document.getElementById('reveal').onclick=e=>{revealAll=!revealAll; e.target.textContent=revealAll?'Hide answers':'Show all answers'; render();};
+document.getElementById('reset').onclick=()=>{for(const k in answered) delete answered[k]; revealAll=false; document.getElementById('reveal').textContent='Show all answers'; render(); score();};
+chips(); render(); score();
+</script>

@@ -1,0 +1,142 @@
+<title>CV Lab Function Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: search box + one dense table per category; signature column in mono for copy-paste. */
+:root{--bg:#f5f7fa;--surface:#fff;--fg:#17212b;--muted:#5b6878;--line:#d9e0e8;--accent:#0a6c74;--soft:#e2f2f3;
+--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d141b;--surface:#151e28;--fg:#e4ebf2;--muted:#93a4b6;--line:#27343f;--accent:#5cc7cf;--soft:#143338;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d141b;--surface:#151e28;--fg:#e4ebf2;--muted:#93a4b6;--line:#27343f;--accent:#5cc7cf;--soft:#143338;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:0 50px}
+.wrap{max-width:1150px;margin-inline:auto}
+h1{font-size:26px;margin:24px 0 4px}
+.sub{color:var(--muted);margin:0 0 10px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;z-index:3;border-bottom:1px solid var(--line)}
+#q{width:100%;max-width:420px;font:15px var(--body);padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
+#q:focus-visible{outline:2px solid var(--accent)}
+h2{font-size:16px;margin:22px 0 6px;color:var(--accent)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{text-align:left;vertical-align:top;padding:6px 10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.sig{font-family:var(--mono);font-size:12.5px;white-space:pre-wrap;width:36%;color:var(--fg)}
+td.lab{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+code{font-family:var(--mono);font-size:.9em;background:var(--soft);padding:0 4px;border-radius:3px}
+.traps{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 16px;margin-top:14px}
+.traps li{margin:3px 0}
+</style>
+<div class="wrap">
+<h1>CV Lab Function Sheet</h1>
+<p class="sub">Every function from Labs 01-06 with parameters, return values and the trap to avoid. Type to filter.</p>
+<div class="bar"><input id="q" type="search" placeholder="Search e.g. threshold, warp, sift, kmeans" aria-label="Filter functions"></div>
+<div class="traps"><b>Top traps:</b><ul>
+<li><code>img.shape</code> = (h, w, c) but <code>dsize</code> in resize / warp / VideoWriter = <b>(w, h)</b>. Points are (x, y); indexing is <code>img[y, x]</code>.</li>
+<li>OpenCV = <b>BGR</b>. Use <code>cv2.cvtColor(img, cv2.COLOR_BGR2RGB)</code> before <code>plt.imshow</code>; gray needs <code>cmap='gray'</code>.</li>
+<li><code>imread</code> returns <b>None</b> on a bad path. <code>threshold</code> returns 2 values; <code>adaptiveThreshold</code> returns 1.</li>
+<li>Kernel sizes (GaussianBlur, medianBlur, blockSize) must be <b>odd</b>. uint8 math wraps: convert to float or use <code>cv2.add</code> (saturates).</li>
+<li>Hough functions return <b>None</b> when nothing is found. HoughCircles shape is (1, N, 3).</li>
+</ul></div>
+<div id="out"></div>
+</div>
+<script>
+// [category, signature, parameters, returns / notes, labs]
+const F=[
+["Read, show, save","cv2.imread(path, flag)","flag: cv2.IMREAD_COLOR (1, default, BGR) | IMREAD_GRAYSCALE (0) | IMREAD_UNCHANGED (-1, keeps alpha)","ndarray uint8 or None if path wrong","1-6"],
+["Read, show, save","cv2.imwrite(path, img)","path with extension decides format","True/False","all"],
+["Read, show, save","cv2.imshow(name, img); cv2.waitKey(0); cv2.destroyAllWindows()","waitKey(ms): 0 = wait forever, 1 = video loop","Does not work inline in Jupyter/Colab: use plt","1,2,6"],
+["Read, show, save","plt.imshow(img, cmap='gray', vmin=0, vmax=255)","expects RGB; cmap for 2D; vmin/vmax stop auto-scaling","plt.axis('off'), plt.title(t), plt.show()","all"],
+["Read, show, save","fig, ax = plt.subplots(r, c, figsize=(w_in, h_in))","ax[i].imshow / set_title / axis('off'); plt.tight_layout()","side-by-side comparisons","all"],
+["Read, show, save","plt.hist(gray.ravel(), 256, [0, 256])","flatten image first","intensity histogram","2,5"],
+["Color","cv2.cvtColor(img, code)","COLOR_BGR2RGB, COLOR_BGR2GRAY, COLOR_GRAY2BGR, COLOR_BGR2HSV","HSV in OpenCV: H 0-179, S/V 0-255","all"],
+["Color","cv2.split(img) / cv2.merge([b, g, r])","","split -> 3 single-channel arrays","2"],
+["Color","cv2.applyColorMap(gray8, cv2.COLORMAP_JET)","also COLORMAP_BONE, HOT...; input uint8 1-channel","3-channel BGR false color","2"],
+["Color","cv2.inRange(hsv, np.array([h,s,v]), np.array([h,s,v]))","lower and upper inclusive","1-channel mask 0/255. Red needs 0-10 and 170-179","5,6"],
+["Geometry / transform","cv2.resize(img, (w, h), interpolation=cv2.INTER_LINEAR)\ncv2.resize(img, None, fx=0.5, fy=0.5)","INTER_AREA shrink, INTER_CUBIC/LINEAR enlarge, INTER_NEAREST","dsize=(width, height)","1,3"],
+["Geometry / transform","cv2.getRotationMatrix2D((cx, cy), angle_deg, scale)","+angle = counter-clockwise; center (w/2, h/2)","2x3 matrix","1,3,6"],
+["Geometry / transform","cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)","M must be 2x3 (use T[:2] for 3x3)","empty area black unless borderValue","1,3"],
+["Geometry / transform","np.float32([[1,0,tx],[0,1,ty]])","translation; +ty moves DOWN","shear: [[1,k,0],[0,1,0]]; scale: [[sx,0,0],[0,sy,0]]","3"],
+["Geometry / transform","cv2.getAffineTransform(src3, dst3)","np.float32 shape (3,2), non-collinear","2x3 matrix","3"],
+["Geometry / transform","cv2.getPerspectiveTransform(src4, dst4)","np.float32 shape (4,2), order TL,TR,BR,BL","3x3 homography","3"],
+["Geometry / transform","cv2.warpPerspective(img, H, (w, h))","H is 3x3","perspective / bird's-eye / stitching","3,6"],
+["Geometry / transform","cv2.invertAffineTransform(M); np.linalg.inv(H)","undo a warp","inverse matrix","3"],
+["Geometry / transform","cv2.flip(img, code)","0 vertical, 1 horizontal, -1 both","flipped image","3"],
+["Geometry / transform","A @ B  (matrix multiply)","M = T @ R @ S: S applied first","not commutative","3"],
+["Crop / draw","img[y1:y2, x1:x2]","rows first; returns a view -> .copy()","ROI crop","1"],
+["Crop / draw","np.zeros((h, w, 3), np.uint8)","blank black canvas / mask","","1,5"],
+["Crop / draw","cv2.line(img, (x1,y1), (x2,y2), (B,G,R), thickness)","color in image's channel order","in place","1,6"],
+["Crop / draw","cv2.rectangle(img, (x1,y1), (x2,y2), color, thickness)","thickness -1 = filled","in place","1,6"],
+["Crop / draw","cv2.circle(img, (x,y), r, color, thickness)","ints only; -1 filled","in place","1,5,6"],
+["Crop / draw","cv2.putText(img, text, (x,y), cv2.FONT_HERSHEY_SIMPLEX, scale, color, thick, cv2.LINE_AA)","org = bottom-left of text","in place","1,6"],
+["Crop / draw","cv2.polylines(img, [np.int32(pts)], True, color, th) / cv2.fillPoly(mask, [pts], 255)","list of int32 point arrays","outline / filled polygon (ROI masks)","1,6"],
+["Arithmetic / bitwise","cv2.add(a, b) / cv2.subtract(a, b)","same size and type","saturates (250+10=255); numpy + wraps","1,5"],
+["Arithmetic / bitwise","cv2.addWeighted(a, alpha, b, beta, gamma)","same size & channels","alpha*a + beta*b + gamma; blending/fusion","1,2"],
+["Arithmetic / bitwise","cv2.bitwise_and(img, img, mask=mask)","mask 1-channel uint8","keeps masked pixels","1,2,5,6"],
+["Arithmetic / bitwise","cv2.bitwise_not(m) / cv2.bitwise_or(a, b)","","invert / combine","1"],
+["Arithmetic / bitwise","np.clip(x, 0, 255).astype(np.uint8)","after float math","safe back to uint8","2"],
+["Arithmetic / bitwise","np.hstack([a, b]) / np.vstack","same height (hstack) and channel count","side-by-side frame","2"],
+["Enhancement","cv2.equalizeHist(gray)","8-bit 1-channel only","contrast stretched via CDF","1,2"],
+["Enhancement","c*np.log1p(img.astype(float)), c = 255/np.log(1+img.max())","log transform","expands dark values","2"],
+["Enhancement","255*np.power(img/255.0, gamma)","gamma<1 brightens, >1 darkens","power-law","2"],
+["Enhancement","cv2.convertScaleAbs(src, alpha=1, beta=0)","|alpha*src + beta| -> uint8","display Sobel/Laplacian; contrast/brightness","5,6"],
+["Enhancement","cv2.normalize(x, None, 0, 255, cv2.NORM_MINMAX)","rescale to 0..255","use with .astype(np.uint8)","5"],
+["Threshold","ret, th = cv2.threshold(gray, T, maxval, type)","THRESH_BINARY (>T -> maxval), BINARY_INV, TRUNC, TOZERO, TOZERO_INV","returns 2 values","1,2,5,6"],
+["Threshold","ret, th = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)","T ignored; gray uint8","ret = auto threshold","5"],
+["Threshold","th = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, blockSize, C)","MEAN_C or GAUSSIAN_C; blockSize odd >1 (11); C subtracted (2)","returns 1 value","1,5"],
+["Filter / blur","cv2.GaussianBlur(img, (k, k), sigma)","k odd; sigma 0 = auto","blur, denoise","1,4,5,6"],
+["Filter / blur","cv2.blur(img, (k, k)) / cv2.medianBlur(img, k)","median k odd int; good for salt & pepper","box / median","4,6"],
+["Filter / blur","cv2.filter2D(img, -1, kernel)","-1 = same depth; kernel float32","any convolution (box = ones/9, emboss...); same size output","4"],
+["Filter / blur","cv2.getGaussianKernel(k, sigma)","returns k x 1 column","2D kernel = g @ g.T","4"],
+["Edges / gradients","cv2.Sobel(gray, cv2.CV_64F, dx, dy, ksize=3)","(1,0) vertical edges; (0,1) horizontal; CV_64F keeps negatives","derivative image","4,6"],
+["Edges / gradients","cv2.Scharr(gray, cv2.CV_64F, dx, dy)","more accurate 3x3","","4,6"],
+["Edges / gradients","cv2.Laplacian(gray, cv2.CV_64F, ksize=1)","2nd derivative; blur first (LoG)","edges = zero-crossings","4,6"],
+["Edges / gradients","np.sqrt(gx**2 + gy**2); np.degrees(np.arctan2(gy, gx))","magnitude, angle -180..180","use % 360 or % 180 for histograms","4,6"],
+["Edges / gradients","cv2.Canny(gray, low, high, apertureSize=3, L2gradient=False)","low=threshold1, high=threshold2 (ratio 1:2-1:3)","binary 0/255 edge map","4,5,6"],
+["Features (Lab 4)","hog(gray, orientations=9, pixels_per_cell=(8,8), cells_per_block=(2,2), visualize=True)","from skimage.feature import hog","(features, hog_image); exposure.rescale_intensity(hog_image, in_range=(0,10))","4"],
+["Features (Lab 4)","local_binary_pattern(gray, P=8, R=1, method='uniform')","from skimage.feature","codes 0..P+1 -> np.histogram(bins=np.arange(0, P+3))","4"],
+["Features (Lab 4)","cv2.calcHist([img], [ch], mask, [bins], [lo, hi])","HSV: [0,1,2], [8,8,8], [0,180,0,256,0,256]","histogram array; .flatten()","4"],
+["Features (Lab 4)","np.histogram(x, bins=n, range=(lo, hi), weights=None)","weights=magnitude for gradient hist","(hist, bin_edges)","4"],
+["Segmentation (Lab 5)","cv2.morphologyEx(m, cv2.MORPH_OPEN, kernel, iterations=2)","OPEN = erode->dilate (remove noise); CLOSE = dilate->erode (fill holes)","kernel = np.ones((3,3), np.uint8)","5,6"],
+["Segmentation (Lab 5)","cv2.erode(m, k, iterations=n) / cv2.dilate(m, k, iterations=n)","","shrink / grow white","5,6"],
+["Segmentation (Lab 5)","cv2.distanceTransform(bin, cv2.DIST_L2, 5)","distance to nearest zero","float32 -> np.uint8 later","5"],
+["Segmentation (Lab 5)","n, labels = cv2.connectedComponents(sure_fg)","8-bit binary input","n includes background (objects = n-1); int32 labels","5"],
+["Segmentation (Lab 5)","markers = cv2.watershed(img_bgr, markers)","img 8-bit 3-ch; markers int32 (+1 bg, 0 unknown)","boundaries = -1","5"],
+["Segmentation (Lab 5)","ret, labels, centers = cv2.kmeans(data, K, None, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)","data float32 (N,3); criteria=(EPS+MAX_ITER, 100, 0.2); flags or KMEANS_PP_CENTERS","seg = np.uint8(centers)[labels.flatten()].reshape(img.shape)","5"],
+["Segmentation (Lab 5)","cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)","binary input","(contours, hierarchy) in OpenCV 4","6"],
+["Segmentation (Lab 5)","cv2.contourArea(c); cv2.boundingRect(c); cv2.drawContours(img, cnts, -1, color, 2)","-1 = draw all","area; (x, y, w, h)","6"],
+["Hough (Lab 6)","cv2.HoughLines(edges, 1, np.pi/180, threshold)","rho px, theta rad, min votes","(N,1,2) [rho, theta] or None","6"],
+["Hough (Lab 6)","cv2.HoughLinesP(edges, 1, np.pi/180, threshold, minLineLength=40, maxLineGap=10)","probabilistic","(N,1,4) [x1,y1,x2,y2] or None","6"],
+["Hough (Lab 6)","cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=0, maxRadius=0)","gray 8-bit; param1 = Canny high; lower param2 = more circles","(1,N,3) [x,y,r] or None -> np.uint16(np.around(c[0]))","6"],
+["SIFT / matching (Lab 6)","sift = cv2.SIFT_create(); kp, des = sift.detectAndCompute(gray, None)","nfeatures, contrastThreshold=0.04, edgeThreshold=10, sigma=1.6","des float32 (N,128); kp.pt = (x,y)","6"],
+["SIFT / matching (Lab 6)","cv2.drawKeypoints(img, kp, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)","RICH shows size + orientation","image","6"],
+["SIFT / matching (Lab 6)","bf = cv2.BFMatcher(cv2.NORM_L2); m = bf.knnMatch(d1, d2, k=2)","NORM_L2 for SIFT, NORM_HAMMING for ORB","ratio test: m.distance < 0.75*n.distance","6"],
+["SIFT / matching (Lab 6)","cv2.drawMatches(img1, kp1, img2, kp2, good, None, flags=2)","flags 2 = no single points","side-by-side match image","6"],
+["SIFT / matching (Lab 6)","H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)","pts float32 (N,1,2); >= 4 pairs","3x3 H, inlier mask","6"],
+["SIFT / matching (Lab 6)","cv2.perspectiveTransform(corners(N,1,2), H)","float32 points","mapped points -> polylines box","6"],
+["Wavelets (Lab 6)","cA, cD = pywt.dwt(x, 'haar'); pywt.idwt(cA, cD, 'haar')","haar = db1; db4, sym...","1-level 1D","6"],
+["Wavelets (Lab 6)","cA, (cH, cV, cD) = pywt.dwt2(img, 'haar'); pywt.idwt2(...)","2D","4 sub-bands","6"],
+["Wavelets (Lab 6)","coeffs = pywt.wavedec(x, 'db4', level=4); pywt.waverec(coeffs, 'db4')","[cA4, cD4, ..., cD1]","threshold coeffs[1:] only","6"],
+["Wavelets (Lab 6)","pywt.threshold(c, thr, mode='soft')","'soft' or 'hard'; thr = sigma*sqrt(2 ln N)","denoised coeffs","6"],
+["Video","cap = cv2.VideoCapture('file.mp4'); ret, frame = cap.read()","0 = webcam; break when ret is False","cap.get(cv2.CAP_PROP_FPS / FRAME_COUNT / FRAME_WIDTH); cap.release()","2,6"],
+["Video","cv2.VideoWriter(path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))","frames must match (w, h)","out.write(frame); out.release()","6"],
+["Video","bg = cv2.createBackgroundSubtractorMOG2(history=500, varThreshold=16, detectShadows=True); m = bg.apply(frame)","","mask: 255 fg, 127 shadow, 0 bg","6"],
+["NumPy / pandas","img.reshape(-1, 3); arr.flatten(); arr.ravel()","-1 infers size","(H*W, 3) pixel list","1,5"],
+["NumPy / pandas","np.float32(x), np.uint8(x), x.astype(np.float64)","convert before math","","all"],
+["NumPy / pandas","np.percentile(img, 90); np.unique(x); np.where(cond)","","","2,5,6"],
+["NumPy / pandas","pd.DataFrame(img.reshape(-1,3), columns=['B','G','R']).describe()","","count, mean, std, min, quartiles, max","1"]
+];
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function render(q){
+  q=q.toLowerCase(); const out=document.getElementById('out'); let html='', cat='';
+  const rows=F.filter(r=>!q||r.join(' ').toLowerCase().includes(q));
+  rows.forEach((r,i)=>{
+    if(r[0]!==cat){ if(cat) html+='</table></div>'; cat=r[0];
+      html+='<h2>'+esc(cat)+'</h2><div class="tw"><table><tr><th>Function</th><th>Parameters</th><th>Returns / note</th><th>Lab</th></tr>'; }
+    html+='<tr><td class="sig">'+esc(r[1])+'</td><td>'+esc(r[2])+'</td><td>'+esc(r[3])+'</td><td class="lab">'+esc(r[4])+'</td></tr>';
+  });
+  if(cat) html+='</table></div>'; else html='<p>No function matches "'+esc(q)+'".</p>';
+  out.innerHTML=html;
+}
+document.getElementById('q').addEventListener('input',e=>render(e.target.value));
+render('');
+</script>
